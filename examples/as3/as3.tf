@@ -3,8 +3,8 @@
 
 provider "bigip" {
   address = "X.X.X.X"
-  username = "admin"
-  password = "pass"
+  username = "xxxxx"
+  password = "xxxx"
 }
 
 

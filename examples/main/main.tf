@@ -1,7 +1,7 @@
 provider "bigip" {
   address = "${var.bigip_management_ip}"
-  username = "admin"
-  password = "admin"
+  username = "xxxxx"
+  password = "xxxxx"
 }
 
 

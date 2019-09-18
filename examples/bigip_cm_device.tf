@@ -1,7 +1,7 @@
 provider "bigip" {
-  address = "10.192.74.73" // bigip ip address //
-  username = "admin" 
-  password = "admin"
+  address = "xxx.xxx.xxx.xxx" // bigip ip address //
+  username = "xxxxx" 
+  password = "xxxxx"
 }
 
 

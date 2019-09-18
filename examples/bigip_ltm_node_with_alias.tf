@@ -1,15 +1,15 @@
 provider "bigip" {
-  address = "10.192.74.73"
+  address = "xxx.xxx.xxx.xxx"
   alias = "east"
-  username = "admin"
-  password = "admin"
+  username = "xxxxx"
+  password = "xxxxx"
 }
 
 provider "bigip" {
    alias = "west"
-   address = "10.192.74.68"
-   username = "admin"
-   password = "admin"
+   address = "xxx.xxx.xxx.xxx"
+   username = "xxxxx"
+   password = "xxxxx"
 }
 
 

@@ -20,9 +20,9 @@ func testBigipLtmNodeInvalid(resourceName string) string {
 	                invalidkey = "foo"
 		}
 		provider "bigip" {
-			address = "10.10.10.1"
-			username = "admin"
-			password = "admin"
+			address = "xxx.xxx.xxx.xxx"
+			username = "xxxxx"
+			password = "xxxxx"
 		}
 	`, resourceName)
 }
@@ -49,8 +49,8 @@ func testBigipLtmNodeCreate(resourceName string, url string, address string) str
 		}
 		provider "bigip" {
 			address = "%s"
-			username = "admin"
-			password = "admin"
+			username = "xxxxx"
+			password = "xxxxx"
 		}
 	`, resourceName, address, url)
 }
