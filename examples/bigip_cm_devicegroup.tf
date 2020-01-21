@@ -8,10 +8,7 @@ provider "bigip" {
   username = "xxxx"
   password = "xxxx"
 }
-
-
 resource "bigip_cm_devicegroup" "my_new_devicegroup"
-
         {
             name = "deadlygroup"
             auto_sync = "enabled"
