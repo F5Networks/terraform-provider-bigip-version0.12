@@ -46,7 +46,6 @@ func resourceBigipAs3() *schema.Resource {
 
 func resourceBigipAs3Create(d *schema.ResourceData, meta interface{}) error {
 	client_bigip := meta.(*bigip.BigIP)
-
 	as3_json := d.Get("as3_json").(string)
 	name := d.Get("config_name").(string)
 	log.Printf("[INFO] Creating as3 config in bigip:%s", as3_json)
@@ -77,7 +76,6 @@ func resourceBigipAs3Create(d *schema.ResourceData, meta interface{}) error {
 func resourceBigipAs3Read(d *schema.ResourceData, meta interface{}) error {
 	client_bigip := meta.(*bigip.BigIP)
 	log.Printf("[INFO] Reading As3 config")
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	client := &http.Client{Transport: tr}
@@ -93,6 +91,7 @@ func resourceBigipAs3Read(d *schema.ResourceData, meta interface{}) error {
 	resp, err := client.Do(req)
 	body, err := ioutil.ReadAll(resp.Body)
 	bodyString := string(body)
+	d.Set("as3_json", bodyString)
 	if resp.Status != "200 OK" || err != nil {
 		defer resp.Body.Close()
 		return fmt.Errorf("Error while Sending/fetching http request :%s  %v", bodyString, err)
@@ -105,7 +104,6 @@ func resourceBigipAs3Read(d *schema.ResourceData, meta interface{}) error {
 func resourceBigipAs3Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client_bigip := meta.(*bigip.BigIP)
 	log.Printf("[INFO] Checking if As3 config exists in bigip ")
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	client := &http.Client{Transport: tr}
@@ -160,7 +158,7 @@ func resourceBigipAs3Update(d *schema.ResourceData, meta interface{}) error {
 
 func resourceBigipAs3Delete(d *schema.ResourceData, meta interface{}) error {
 	client_bigip := meta.(*bigip.BigIP)
-	log.Printf("[INFO] Deleting As3 config")
+	log.Printf("[INFO] Deleting As3 delete")
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	client := &http.Client{Transport: tr}
