@@ -91,6 +91,7 @@ type regKeyAssignStatus struct {
 
 type LicenseParam struct {
 	Address         string `json:"address,omitempty"`
+	Port            int    `json:"port,omitempty"`
 	AssignmentType  string `json:"assignmentType,omitempty"`
 	Command         string `json:"command,omitempty"`
 	Hypervisor      string `json:"hypervisor,omitempty"`
@@ -113,7 +114,6 @@ func (b *BigIP) PostLicense(config *LicenseParam) (string, error) {
 	respRef := make(map[string]interface{})
 	json.Unmarshal(resp, &respRef)
 	respID := respRef["id"].(string)
-	//log.Printf("respRefcID = %v", respID)
 	time.Sleep(5 * time.Second)
 	return respID, nil
 }
@@ -132,6 +132,7 @@ func (b *BigIP) GetLicenseStatus(id string) (map[string]interface{}, error) {
 		}
 		return b.GetLicenseStatus(id)
 	}
+	log.Printf("License Assignment is :%s", licStatus)
 	return licRes, nil
 }
 
