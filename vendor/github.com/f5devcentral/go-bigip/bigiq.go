@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+        "strings"
+        "reflect"
 )
 
 const (
@@ -17,7 +19,15 @@ const (
 	uriMembers     = "members"
 	uriTasks       = "tasks"
 	uriManagement  = "member-management"
+        uriDeclare      = "declare"
 )
+
+type BigiqDevice struct {
+        Address string `json:"address"`
+        Username      string `json:"username"`
+        Password      string `json:"password"`
+        Port     int    `json:"port,omitempty"`
+}
 
 type DeviceRef struct {
 	Link string `json:"link"`
@@ -215,7 +225,6 @@ func (b *BigIP) GetRegkeyPoolId(poolName string) (string, error) {
 	}
 	return "", nil
 }
-
 func (b *BigIP) RegkeylicenseAssign(config interface{}, poolId string, regKey string) (*memberDetail, error) {
 	resp, err := b.postReq(config, uriMgmt, uriCm, uriDevice, uriLicensing, uriPool, uriRegkey, uriLicenses, poolId, uriOfferings, regKey, uriMembers)
 	if err != nil {
@@ -271,4 +280,119 @@ func (b *BigIP) LicenseRevoke(config interface{}, poolId, regKey, memId string) 
 	}
 	log.Printf("Response after delete:%+v", r1)
 	return nil
+}
+func (b *BigIP) PostAs3Bigiq(as3NewJson string) (error) {
+    return b.post(as3NewJson, uriMgmt, uriShared, uriAppsvcs, uriDeclare )
+    
+}
+func (b *BigIP) GetAs3Bigiq(name string) (string, error) {
+as3Json := make(map[string]interface{})
+	as3Json["class"] = "AS3"
+	as3Json["action"] = "deploy"
+	as3Json["persist"] = true
+	adcJson := make(map[string]interface{})
+        err, ok := b.getForEntityNew(&adcJson, uriMgmt, uriShared, uriAppsvcs, uriDeclare, name)
+	if err != nil {
+		return "", err
+	}
+	if !ok {
+		return "", nil
+	}
+       as3Json["declaration"] = adcJson
+	out, _ := json.Marshal(as3Json)
+	as3String := string(out)
+	return as3String, nil
+}
+
+func (b *BigIP) DeleteAs3Bigiq(as3NewJson string, tenantName string) (error, string) {
+ as3Json, err := tenantTrimToDelete(as3NewJson)
+ if err != nil {
+        log.Println("[ERROR] Error in trimming the as3 json")
+        return err, ""
+      }
+return b.post(as3Json, uriMgmt, uriShared, uriAppsvcs, uriDeclare ), ""
+}
+
+func (b *BigIP) GetTenantList(body interface{}) (string, int) {
+	s := make([]string, 0)
+	as3json := body.(string)
+	resp := []byte(as3json)
+	jsonRef := make(map[string]interface{})
+	json.Unmarshal(resp, &jsonRef)
+	for key, value := range jsonRef {
+		if rec, ok := value.(map[string]interface{}); ok && key == "declaration" {
+			for k, v := range rec {
+				if rec2, ok := v.(map[string]interface{}); ok {
+					found := 0
+					for k1, v1 := range rec2 {
+						if k1 == "class" && v1 == "Tenant" {
+							found = 1
+						}
+					}
+					if found == 1 {
+						s = append(s, k)
+					}
+				}
+			}
+		}
+	}
+	tenant_list := strings.Join(s[:], ",")
+	return tenant_list, len(s)
+}
+func (b *BigIP) TenantDifference(slice1 []string, slice2 []string) string {
+	var diff []string
+	for i := 0; i < 2; i++ {
+		for _, s1 := range slice1 {
+			found := false
+			for _, s2 := range slice2 {
+				if s1 == s2 {
+					found = true
+					break
+				}
+			}
+			if !found {
+				diff = append(diff, s1)
+			}
+
+		}
+	}
+	diff_tenant_list := strings.Join(diff[:], ",")
+	return diff_tenant_list
+}
+func tenantCompare(t1 string, t2 string) int {
+	tenantList1 := strings.Split(t1, ",")
+	tenantList2 := strings.Split(t2, ",")
+	if len(tenantList1) == len(tenantList2) {
+		return 1
+	}
+	return 0
+}
+
+func tenantTrimToDelete(resp string) (string, error) {
+jsonRef := make(map[string]interface{})
+	json.Unmarshal([]byte(resp), &jsonRef)
+
+	for key, value := range jsonRef {
+		if rec, ok := value.(map[string]interface{}); ok && key == "declaration" {
+			for k, v := range rec {
+                                 if (k == "target" && reflect.ValueOf(v).Kind() == reflect.Map) {
+                                                                       continue
+                                                                   }
+				if rec2, ok := v.(map[string]interface{}); ok {
+					for k1, v1 := range rec2 {
+						if k1 != "class" && v1 != "Tenant" {
+							delete(rec2,k1)
+						}
+					}       
+
+				}
+			}
+		}
+	}
+        
+      b, err := json.Marshal(jsonRef)
+      if err != nil {
+        return "", err
+      }
+      return string(b), nil
 }
