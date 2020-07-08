@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/f5devcentral/go-bigip"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"log"
 	"strings"
 	"sync"
@@ -82,6 +84,11 @@ func resourceBigiqAs3() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "AS3 json",
+				StateFunc: func(v interface{}) string {
+					json, _ := structure.NormalizeJsonString(v)
+					return json
+				},
+				ValidateFunc: validation.ValidateJsonString,
 			},
 			"tenant_list": {
 				Type:        schema.TypeString,
@@ -106,11 +113,14 @@ func resourceBigiqAs3Create(d *schema.ResourceData, meta interface{}) error {
 	as3_json := d.Get("as3_json").(string)
 	tenantList, _ := bigiqRef.GetTenantList(as3_json)
 	log.Println(tenantList)
-	err = bigiqRef.PostAs3Bigiq(as3_json)
-	if err != nil {
-		return fmt.Errorf("Error posting as3 from bigiq :%v", err)
-	}
 	_ = d.Set("tenant_list", tenantList)
+	err, successfulTenants := bigiqRef.PostAs3Bigiq(as3_json)
+	if err != nil {
+		if successfulTenants == "" {
+			return fmt.Errorf("Error creating json  %s: %v", tenantList, err)
+		}
+		_ = d.Set("tenant_list", successfulTenants)
+	}
 	d.SetId("tenantList")
 	x = x + 1
 	return resourceBigiqAs3Read(d, meta)
@@ -135,6 +145,7 @@ func resourceBigiqAs3Read(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		return nil
 	}
+	_ = d.Set("as3_json", as3Resp)
 	return nil
 }
 
@@ -168,7 +179,7 @@ func resourceBigiqAs3Update(d *schema.ResourceData, meta interface{}) error {
 			//}
 		}
 	}
-	err = bigiqRef.PostAs3Bigiq(as3Json)
+	err, _ = bigiqRef.PostAs3Bigiq(as3Json)
 	if err != nil {
 		return fmt.Errorf("Error updating json  %s: %v", tenantList, err)
 	}
