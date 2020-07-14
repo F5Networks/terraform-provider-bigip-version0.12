@@ -7,6 +7,7 @@ import (
 	"time"
         "strings"
         "reflect"
+        "errors"
 )
 
 const (
@@ -113,6 +114,24 @@ type LicenseParam struct {
 	Tenant          string `json:"tenant,omitempty"`
 	UnitOfMeasure   string `json:"unitOfMeasure,omitempty"`
 	User            string `json:"user,omitempty"`
+}
+type As3AllTaskType struct {
+	Items []As3TaskType `json:"items,omitempty"`
+}
+
+type As3TaskType struct {
+        Code      int64  `json:"code,omitempty"`
+	//ID string `json:"id,omitempty"`
+	//Declaration struct{} `json:"declaration,omitempty"`
+	Results []Results1 `json:"results,omitempty"`
+}
+type Results1 struct {
+	Code      int64  `json:"code,omitempty"`
+	Message   string `json:"message,omitempty"`
+//	LineCount int64  `json:"lineCount,omitempty"`
+	Host      string `json:"host,omitempty"`
+	Tenant    string `json:"tenant,omitempty"`
+	RunTime   int64  `json:"runTime,omitempty"`
 }
 
 func (b *BigIP) PostLicense(config *LicenseParam) (string, error) {
@@ -281,10 +300,41 @@ func (b *BigIP) LicenseRevoke(config interface{}, poolId, regKey, memId string) 
 	log.Printf("Response after delete:%+v", r1)
 	return nil
 }
-func (b *BigIP) PostAs3Bigiq(as3NewJson string) (error) {
-    return b.post(as3NewJson, uriMgmt, uriShared, uriAppsvcs, uriDeclare )
+func (b *BigIP) PostAs3Bigiq(as3NewJson string) (error, string) {
+    resp, err :=  b.postReq(as3NewJson, uriMgmt, uriShared, uriAppsvcs, uriDeclare )
+    if err != nil {
+		return err, ""
+	}
+    var taskList As3TaskType
+    tenant_list, tenant_count := b.GetTenantList(as3NewJson)
+    json.Unmarshal(resp, &taskList)
+    successfulTenants := make([]string, 0)
+    if taskList.Code != 200 && taskList.Code != 0{
+          i := tenant_count - 1
+          success_count := 0
+          for i >= 0 {
+					if taskList.Results[i].Code == 200 {
+						successfulTenants = append(successfulTenants, taskList.Results[i].Tenant)
+						success_count++
+					}
+					if taskList.Results[i].Code >= 400 {
+						log.Printf("[ERROR] : HTTP %d :: %s for tenant %v", taskList.Results[i].Code, taskList.Results[i].Message, taskList.Results[i].Tenant)
+					}
+					i = i - 1
+				}
+				if success_count == tenant_count {
+					log.Printf("[DEBUG]Sucessfully Created tenants  = %v", tenant_list)
+				} else if success_count == 0 {
+					return errors.New(fmt.Sprintf("Tenant Creation failed")), ""
+				} else {
+					finallist := strings.Join(successfulTenants[:], ",")
+					return errors.New(fmt.Sprintf("Partial Success")), finallist
+				}
+    }
+    return nil, tenant_list
     
 }
+
 func (b *BigIP) GetAs3Bigiq(name string) (string, error) {
 as3Json := make(map[string]interface{})
 	as3Json["class"] = "AS3"
