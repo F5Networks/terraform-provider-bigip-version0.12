@@ -31,3 +31,14 @@ provider "bigip" {
 - `password` - (Required) Password for authentication
 - `token_auth` - (Optional, Default=false) Enable to use an external authentication source (LDAP, TACACS, etc)
 - `login_ref` - (Optional, Default="tmos") Login reference for token authentication (see BIG-IP REST docs for details)
+
+
+### Note
+
+```
+By default our provider will send telemetry data for this resource to TEEM production server.
+If you don't want to send telemetry data to TEEM Server you can do with by setting below environment flag.
+
+export TEEM_DISABLE=true
+
+```

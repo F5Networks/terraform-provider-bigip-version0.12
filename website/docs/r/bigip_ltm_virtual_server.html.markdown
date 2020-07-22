@@ -96,14 +96,3 @@ resource "bigip_ltm_virtual_server" "https" {
 * `persistence_profiles` - (Optional) List of persistence profiles associated with the Virtual Server.
 
 * `fallback_persistence_profile` - (Optional) Specifies a fallback persistence profile for the Virtual Server to use when the default persistence profile is not available.
-
-
-### Note
-
-```
-By default our provider will send telemetry data for this resource to TEEM production server.
-If you don't want to send telemetry data to TEEM Server you can do with by setting below environment flag.
-
-export TEEM_DISABLE=true
-
-```
