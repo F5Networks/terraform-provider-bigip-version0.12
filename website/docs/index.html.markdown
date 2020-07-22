@@ -34,11 +34,8 @@ provider "bigip" {
 
 
 ### Note
+The F5 BIG-IP provider gathers non-identifiable usage data for the purposes of improving the product as outlined in the end user license agreement for BIG-IP. To opt out of data collection, use the following:
 
-```
-By default our provider will send telemetry data for this resource to TEEM production server.
-If you don't want to send telemetry data to TEEM Server you can do with by setting below environment flag.
+`export TEEM_DISABLE=true`
 
-export TEEM_DISABLE=true
 
-```
