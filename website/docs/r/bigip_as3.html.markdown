@@ -11,6 +11,7 @@ description: |-
 `bigip_as3` provides details about bigip as3 resource
 
 This resource is helpful to configure deploy as3 declarative JSON on BIG-IP.
+
 ## Example Usage
 
 
@@ -74,3 +75,14 @@ resource "bigip_as3"  "as3-example" {
 }
 ``` 
 * `AS3 documentation` - https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/composing-a-declaration.html
+
+
+### Note
+
+```
+By default our provider will send telemetry data for this resource to TEEM production server.
+If you don't want to send telemetry data to TEEM Server you can do with by setting below environment flag.
+
+export TEEM_DISABLE=true
+
+```
