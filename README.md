@@ -1,3 +1,5 @@
+# This Repo is deprecated repo: Updated BIGIP Provider Link: https://github.com/F5Networks/terraform-provider-bigip
+
 [//]: # (Original work from https://github.com/DealerDotCom/terraform-provider-bigip)
 [//]: # (Modifications Copyright 2019 F5 Networks Inc.)
 [//]: # (This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.)
